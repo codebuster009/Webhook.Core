@@ -1,10 +1,5 @@
-const crypto = require('crypto');
+const { generateSigningSecret } = require('../utils/signing');
 const partnerModel = require('../models/partner.model');
-
-function generateSigningSecret() {
-  const raw = crypto.randomBytes(24).toString('base64url');
-  return `whsec_${raw}`;
-}
 
 async function createPartner(input) {
   const signingSecret = generateSigningSecret();
