@@ -6,6 +6,7 @@ import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { Skeleton } from '../components/ui/Skeleton.jsx';
 import AttemptHistoryTable from '../components/events/AttemptHistoryTable.jsx';
 import RawJsonPanel from '../components/events/RawJsonPanel.jsx';
+import DeliveryHttpTrace from '../components/events/DeliveryHttpTrace.jsx';
 import EventStatusPill from '../components/events/EventStatusPill.jsx';
 import SignatureDeliveryBadge from '../components/events/SignatureDeliveryBadge.jsx';
 import { useEventDetail } from '../hooks/useEventDetail.js';
@@ -55,7 +56,10 @@ export default function EventDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <div
+        className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between"
+        data-tour="eventdetail-header"
+      >
         <div>
           <div className="text-xs text-muted">
             <Link className="text-accent hover:underline" to="/events">
@@ -75,7 +79,7 @@ export default function EventDetail() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4" data-tour="eventdetail-kpis">
         <SummaryCard title="Status">
           <EventStatusPill status={event.status} />
         </SummaryCard>
@@ -111,33 +115,25 @@ export default function EventDetail() {
         <SignatureDeliveryBadge latestAttempt={latestAttempt} />
       </div>
 
-      <RawJsonPanel value={event.payload} />
+      <div data-tour="eventdetail-payload">
+        <RawJsonPanel value={event.payload} />
+      </div>
 
-      <div className="space-y-3">
+      <div className="space-y-3" data-tour="eventdetail-attempts">
         <h2 className="text-lg font-semibold">Delivery Attempt History</h2>
         <AttemptHistoryTable attempts={attempts} />
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="rounded-lg border border-gray-200 bg-white" data-tour="eventdetail-trace">
         <button
           type="button"
           className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold"
           onClick={() => setOpenHeaders((v) => !v)}
         >
-          REQUEST & RESPONSE HEADERS
+          DELIVERY HTTP TRACE
           <span className="text-muted">{openHeaders ? '▾' : '▸'}</span>
         </button>
-        {openHeaders ? (
-          <div className="border-t border-gray-100 px-4 py-3 text-xs text-muted">
-            <div className="flex flex-wrap gap-2">
-              <Badge label="AUTH_MODE: SIGNATURE_V2" />
-              <Badge label="COMPRESSION: GZIP" />
-            </div>
-            <p className="mt-3 font-mono text-[11px]">
-              Static demo headers for reviewers — wire to HTTP traces when available.
-            </p>
-          </div>
-        ) : null}
+        {openHeaders ? <DeliveryHttpTrace attempts={attempts} /> : null}
       </div>
     </div>
   );
@@ -161,10 +157,3 @@ function Meta({ label, value, mono }) {
   );
 }
 
-function Badge({ label }) {
-  return (
-    <span className="rounded-full bg-gray-100 px-2 py-1 font-mono text-[10px] text-gray-700">
-      {label}
-    </span>
-  );
-}

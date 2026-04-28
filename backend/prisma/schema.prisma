@@ -46,17 +46,19 @@ model Event {
 }
 
 model DeliveryAttempt {
-  id            String   @id @default(cuid())
-  eventId       String
-  attemptNumber Int
-  startedAt     DateTime
-  completedAt   DateTime?
-  responseCode  Int?
-  responseBody  String?
-  latencyMs     Int?
-  errorMessage  String?
-  outcome       String
-  event         Event    @relation(fields: [eventId], references: [id])
+  id               String   @id @default(cuid())
+  eventId          String
+  attemptNumber    Int
+  startedAt        DateTime
+  completedAt      DateTime?
+  responseCode     Int?
+  responseBody     String?
+  latencyMs        Int?
+  errorMessage     String?
+  outcome          String
+  requestHeaders   Json?
+  responseHeaders  Json?
+  event            Event    @relation(fields: [eventId], references: [id])
 
   @@index([eventId, attemptNumber])
 }

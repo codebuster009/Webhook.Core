@@ -34,6 +34,8 @@ function mapAttempt(a) {
     latency_ms: a.latencyMs,
     error_message: a.errorMessage,
     outcome: a.outcome,
+    request_headers: a.requestHeaders ?? null,
+    response_headers: a.responseHeaders ?? null,
   };
 }
 

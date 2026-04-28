@@ -1,6 +1,6 @@
 const { prisma } = require('../lib/prisma');
 const { signPayload } = require('../utils/hmac');
-const { postWebhook } = require('../utils/http');
+const { postWebhook, captureRequestHeaders } = require('../utils/http');
 const { backoffSecondsAfterFailure } = require('../utils/backoff');
 
 function buildWebhookBody(event) {
@@ -63,14 +63,16 @@ async function deliverClaimedRow(claimed) {
   const signature = signPayload(event.partner.signingSecret, bodyString);
 
   const startedAt = new Date();
+  const outboundHeaders = {
+    'Content-Type': 'application/json',
+    'X-Webhook-Id': event.id,
+    'X-Webhook-Timestamp': timestampMs,
+    'X-Webhook-Signature': signature,
+    'X-Webhook-Attempt': String(attemptNumber),
+  };
+  const requestHeadersSnapshot = captureRequestHeaders(outboundHeaders);
   const httpResult = await postWebhook(event.partner.webhookUrl, {
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Webhook-Id': event.id,
-      'X-Webhook-Timestamp': timestampMs,
-      'X-Webhook-Signature': signature,
-      'X-Webhook-Attempt': String(attemptNumber),
-    },
+    headers: outboundHeaders,
     body: bodyString,
   });
 
@@ -116,6 +118,8 @@ async function deliverClaimedRow(claimed) {
         latencyMs: httpResult.latencyMs,
         errorMessage: httpResult.errorMessage,
         outcome,
+        requestHeaders: requestHeadersSnapshot,
+        responseHeaders: httpResult.responseHeaders ?? null,
       },
     }),
     prisma.event.update({
