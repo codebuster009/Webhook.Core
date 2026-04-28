@@ -15,7 +15,7 @@ function Pill({ ok, children }) {
 export default function LiveEventsFeed({ items = [] }) {
   return (
     <div className="space-y-4">
-      {items.map((e) => {
+      {items.map((e, i) => {
         const delivered = e.status === 'delivered';
         const retrying = ['retrying', 'in_flight', 'pending'].includes(e.status);
         const label = delivered ? 'SUCCESS' : retrying ? 'RETRYING' : e.status.toUpperCase();
@@ -25,7 +25,11 @@ export default function LiveEventsFeed({ items = [] }) {
             ? `${e.last_code} ERR`
             : 'ERR';
         return (
-          <div key={e.id} className="space-y-2 border-b border-gray-50 pb-4 last:border-0">
+          <div
+            key={e.id}
+            className="live-feed-row space-y-2 border-b border-gray-50 pb-4 last:border-0"
+            style={{ animationDelay: `${Math.min(i, 10) * 48}ms` }}
+          >
             <div className="flex items-start justify-between gap-2">
               <span className="font-mono text-xs text-muted">{e.id}</span>
               <Pill ok={delivered}>{label}</Pill>

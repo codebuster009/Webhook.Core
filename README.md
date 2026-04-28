@@ -20,7 +20,7 @@ Services:
 | Service       | Port (host) | Notes                                      |
 |---------------|-------------|--------------------------------------------|
 | Postgres      | 5433→5432   | Host port 5433 if 5432 is taken locally   |
-| Backend API   | 3000        | `GET /healthz`, `/api/v1/*`                |
+| Backend API   | **3010**→3000 | Avoids clash when host **3000** is used by another app |
 | Worker        | —           | Same image as API, `node src/worker.js`    |
 | Mock partner  | 4001        | Random HTTP outcomes + HMAC verification   |
 | Frontend      | 5173        | nginx serving Vite build                   |
@@ -37,12 +37,66 @@ Seed demo partners + 200 sample events (expects API reachable from your shell):
 cd backend
 cp ../.env.example .env   # adjust DATABASE_URL if not using compose defaults
 npm install
-export API_URL=http://localhost:3000
+export API_URL=http://localhost:3010
 export MOCK_URL=http://mock-partner:4001
 npm run seed
 ```
 
-Then open **http://localhost:5173** (dashboard) and **http://localhost:3000/healthz**.
+Then open **http://localhost:5173** (dashboard) and **http://localhost:3010/healthz**.
+
+If port **3000** is free on your machine, you can map the API as `"3000:3000"` in `docker-compose.yml` and set `VITE_API_BASE_URL` / `API_URL` to `http://localhost:3000` instead.
+
+### Live screening simulation (demos)
+
+With the API up and at least one partner in the database (from seed or the UI), run a **continuous fake upstream screening** process that `POST`s mixed events to the ingestion API—same path a real screening engine would use. Open **Overview** in the browser to watch KPIs and the live feed update.
+
+```bash
+# From repo root; match host port to docker-compose (3010 in default compose)
+export API_URL=http://localhost:3010
+node scripts/simulate-screening.js
+```
+
+| Env | Default | Purpose |
+|-----|---------|---------|
+| `API_URL` | `http://localhost:3010` | Base URL of the Webhook.Core API |
+| `INTERVAL_MS` | `12000` | Milliseconds between batches |
+| `EVENTS_PER_TICK` | `4` | Events sent each interval |
+| `PARTNER_IDS` | _(empty)_ | Comma-separated partner ids to rotate (subset) |
+| `DEDUP_EVERY` | _(off)_ | After every N successful ingests, replay **same** `external_id` once to demo idempotency (`created: false`) |
+
+Stop with **Ctrl+C**.
+
+## Live demo (interview)
+
+End-to-end script for reviewers: **Compose stack → migrate → dashboard → screening simulator → mock partner logs**.
+
+1. **Clean start** (from repo root):
+   ```bash
+   docker compose down -v
+   docker compose up --build -d
+   ```
+2. **Migrations** (waits until Postgres is healthy):
+   ```bash
+   docker compose exec backend npx prisma migrate deploy
+   ```
+3. **Data** (optional if DB is empty): seed demo partners/events — see **Quick start (Docker Compose)** and the `npm run seed` block above, or register partners in the UI.
+4. **Smoke checks** — default Compose publishes the API on host **3010** (see table above):
+   ```bash
+   curl -s http://localhost:3010/healthz
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/
+   ```
+   Open **http://localhost:5173** → Overview shows KPIs and the live feed; **Events** refreshes near real-time.
+5. **Continuous ingestion** (second terminal — use the same host port as `docker-compose.yml` maps for `backend`):
+   ```bash
+   export API_URL=http://localhost:3010
+   node scripts/simulate-screening.js
+   ```
+6. **Verify delivery**: tail the mock receiver to see signed POSTs from the worker:
+   ```bash
+   docker compose logs -f mock-partner
+   ```
+
+If you change the API mapping to `3000:3000`, set `API_URL` and `VITE_API_BASE_URL` to `http://localhost:3000` consistently.
 
 ## Local development
 
@@ -61,7 +115,7 @@ npm run worker     # worker (separate terminal)
 ```bash
 cd frontend
 npm install
-echo 'VITE_API_BASE_URL=http://localhost:3000' > .env.local
+echo 'VITE_API_BASE_URL=http://localhost:3010' > .env.local
 npm run dev        # Vite on http://localhost:5173
 ```
 

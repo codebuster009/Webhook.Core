@@ -25,7 +25,8 @@ services:
     container_name: webhook-api
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Use 3010 on host if another app (e.g. a local dev server) already uses 3000 on IPv4
+      - "3010:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -68,7 +69,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:3000
+        VITE_API_BASE_URL: http://localhost:3010
     container_name: webhook-frontend
     restart: unless-stopped
     ports:

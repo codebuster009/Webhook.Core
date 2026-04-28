@@ -14,6 +14,7 @@ export default function RegisterPartnerModal({ open, onClose, onCreated }) {
 
   useEffect(() => {
     if (open && searchParams.get('demoSecret') === '1') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- demo query hydrates static screenshot secret
       setSecret('whsec_demo_screenshot_placeholder_only');
     }
   }, [open, searchParams]);

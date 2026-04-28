@@ -5,7 +5,9 @@ export default function KpiCard({ label, children, tone = 'neutral' }) {
       : 'border-gray-200 bg-white';
   const labelTone = tone === 'danger' ? 'text-error' : 'text-muted';
   return (
-    <div className={`rounded-lg border p-6 ${border}`}>
+    <div
+      className={`rounded-lg border p-6 shadow-sm transition-shadow duration-200 ease-out hover:shadow-md ${border}`}
+    >
       <span className={`font-mono text-[11px] uppercase tracking-wider ${labelTone}`}>
         {label}
       </span>
