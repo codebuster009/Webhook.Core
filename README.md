@@ -5,9 +5,23 @@ Financial webhook ingestion and delivery platform: HTTP ingestion API, Postgres-
 ## Prerequisites
 
 - **Docker** and **Docker Compose v2** — if you do not have them yet, [install Docker Desktop](https://docs.docker.com/get-docker/) (macOS/Windows) or [Docker Engine + Compose plugin](https://docs.docker.com/engine/install/) (Linux). The `docker compose` commands in this README assume a working local Docker install.
-- Node.js **20** (for local dev outside compose)
+- Node.js **20** (optional — only needed if you seed via `npm run seed` from the host instead of the Compose helper below)
+
+## Get the code
+
+The assignment submission lives on **`master`**. After cloning, check out that branch so you have the full implementation:
+
+```bash
+git clone https://github.com/codebuster009/Webhook.Core.git
+cd Webhook.Core
+git checkout master
+```
+
+(Replace the URL with your fork if applicable.)
 
 ## Quick start (Docker Compose)
+
+### Start the stack
 
 From the repo root:
 
@@ -27,11 +41,26 @@ Services:
 
 The backend and worker containers run `prisma migrate deploy` automatically on startup, so the schema is created on first boot — no manual migrate step needed.
 
-Seed demo partners + 200 sample events (expects API reachable from your shell):
+### Why the dashboard looks empty at first
+
+Compose starts **local Postgres with a new empty volume**. Until you **seed** demo partners/events or register partners in the UI, Overview KPIs and event lists have nothing to show. That is expected — not a bug.
+
+### Load demo partners + sample events
+
+Pick **one**:
+
+**A — Docker only (no Node on your machine)** — wait until the API is up (~30s), then:
+
+```bash
+docker compose --profile seed run --rm seed-demo
+```
+
+This runs [`scripts/seed-demo.js`](scripts/seed-demo.js) inside Compose so partner webhook URLs use the hostname **`mock-partner`** (reachable from the **worker**).
+
+**B — Node.js on the host** — from `backend/`:
 
 ```bash
 cd backend
-cp ../.env.example .env   # adjust DATABASE_URL if not using compose defaults
 npm install
 export API_URL=http://localhost:3010
 export MOCK_URL=http://mock-partner:4001
@@ -39,6 +68,14 @@ npm run seed
 ```
 
 Then open **http://localhost:5173** (dashboard) and **http://localhost:3010/healthz**.
+
+### Partner webhook URL (avoid delivery failures)
+
+For Compose, register partners with:
+
+`http://mock-partner:4001/webhook`
+
+The worker runs **inside Docker** and resolves other services by **Compose service name**. Use exactly **`mock-partner`** (with a **k**). A typo such as **`moc-partner`** produces `getaddrinfo ENOTFOUND` and failing retries — that is misconfiguration, not the demo script. Do not use `http://localhost:4001/...` for the webhook URL in this setup (inside the worker container, `localhost` is not the mock service).
 
 If port **3000** is free on your machine, you can map the API as `"3000:3000"` in `docker-compose.yml` and set `VITE_API_BASE_URL` / `API_URL` to `http://localhost:3000` instead.
 
@@ -62,7 +99,7 @@ node scripts/simulate-screening.js
 
 Stop with **Ctrl+C**.
 
-## Demo 
+## Live demo (interview)
 
 End-to-end script for reviewers: **Compose stack → migrate → dashboard → screening simulator → mock partner logs**.
 
@@ -72,7 +109,7 @@ End-to-end script for reviewers: **Compose stack → migrate → dashboard → s
    docker compose up --build -d
    ```
 2. **Migrations** run automatically on container startup (Prisma `migrate deploy`).
-3. **Data** (optional if DB is empty): seed demo partners/events — see **Quick start (Docker Compose)** and the `npm run seed` block above, or register partners in the UI.
+3. **Data**: load demo partners/events — **`docker compose --profile seed run --rm seed-demo`** (see Quick start), or `npm run seed` from `backend/` with `API_URL=http://localhost:3010`, or register partners in the UI.
 4. **Smoke checks** — default Compose publishes the API on host **3010** (see table above):
    ```bash
    curl -s http://localhost:3010/healthz

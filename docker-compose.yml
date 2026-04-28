@@ -77,5 +77,22 @@ services:
     depends_on:
       - backend
 
+  # One-shot demo data: partners + sample events (requires profile `seed`).
+  #   docker compose --profile seed run --rm seed-demo
+  seed-demo:
+    image: node:20-alpine
+    working_dir: /repo
+    volumes:
+      - ./:/repo
+    environment:
+      API_URL: http://backend:3000
+      MOCK_URL: http://mock-partner:4001
+    command: ["node", "scripts/seed-demo.js"]
+    depends_on:
+      - backend
+      - mock-partner
+    profiles:
+      - seed
+
 volumes:
   postgres_data:
