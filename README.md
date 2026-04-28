@@ -38,12 +38,15 @@ Services:
 | Worker        | —           | Same image as API, `node src/worker.js`    |
 | Mock partner  | 4001        | Random HTTP outcomes + HMAC verification   |
 | Frontend      | 5173        | nginx serving Vite build                   |
+| **Screening sim** | —       | [`scripts/simulate-screening.js`](scripts/simulate-screening.js) — **starts with Compose**; waits for ≥1 partner, then POSTs mixed events on an interval (`docker compose logs -f simulate-screening`) |
 
 The backend and worker containers run `prisma migrate deploy` automatically on startup, so the schema is created on first boot — no manual migrate step needed.
 
 ### Why the dashboard looks empty at first
 
 Compose starts **local Postgres with a new empty volume**. Until you **seed** demo partners/events or register partners in the UI, Overview KPIs and event lists have nothing to show. That is expected — not a bug.
+
+The **`simulate-screening`** container starts with the stack but **waits** (logs every 5s) until at least one partner exists, then begins posting events—so run seed or register a partner and events will start growing automatically.
 
 ### Load demo partners + sample events
 
@@ -81,7 +84,7 @@ If port **3000** is free on your machine, you can map the API as `"3000:3000"` i
 
 ### Live screening simulation (demos)
 
-With the API up and at least one partner in the database (from seed or the UI), run a **continuous fake upstream screening** process that `POST`s mixed events to the ingestion API—same path a real screening engine would use. Open **Overview** in the browser to watch KPIs and the live feed update.
+**With Docker Compose**, the **`simulate-screening`** service runs automatically (same script as below; `API_URL=http://backend:3000` inside the network). Tune cadence with env **`SCREEN_INTERVAL_MS`** and **`SCREEN_EVENTS_PER_TICK`** in `.env` or the shell. Logs: `docker compose logs -f simulate-screening`. To disable the container and run the script on your host only: `docker compose stop simulate-screening`, then:
 
 ```bash
 # From repo root; match host port to docker-compose (3010 in default compose)
@@ -97,7 +100,9 @@ node scripts/simulate-screening.js
 | `PARTNER_IDS` | _(empty)_ | Comma-separated partner ids to rotate (subset) |
 | `DEDUP_EVERY` | _(off)_ | After every N successful ingests, replay **same** `external_id` once to demo idempotency (`created: false`) |
 
-Stop with **Ctrl+C**.
+In **Docker Compose**, set **`SCREEN_INTERVAL_MS`** and **`SCREEN_EVENTS_PER_TICK`** (mapped to the env vars above for the `simulate-screening` service).
+
+Stop: **Ctrl+C** when running on the host, or `docker compose stop simulate-screening` for the container.
 
 ## Live demo (interview)
 
@@ -116,7 +121,7 @@ End-to-end script for reviewers: **Compose stack → migrate → dashboard → s
    curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/
    ```
    Open **http://localhost:5173** → Overview shows KPIs and the live feed; **Events** refreshes near real-time.
-5. **Continuous ingestion** (second terminal — use the same host port as `docker-compose.yml` maps for `backend`):
+5. **Continuous ingestion** — the **`simulate-screening`** service runs with Compose and starts posting after at least one partner exists (use step 3 or the UI). Check logs: `docker compose logs -f simulate-screening`. To run the [same script](scripts/simulate-screening.js) on the host instead, run `docker compose stop simulate-screening` then:
    ```bash
    export API_URL=http://localhost:3010
    node scripts/simulate-screening.js

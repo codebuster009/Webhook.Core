@@ -243,4 +243,4 @@ In that order. Auth first because the dashboard is currently anyone-can-do-anyth
 | API entrypoint | [`backend/src/server.js`](backend/src/server.js) |
 | Worker entrypoint | [`backend/src/worker.js`](backend/src/worker.js) |
 | Mock partner | [`mock-partner/server.js`](mock-partner/server.js) |
-| Continuous ingestion (demo) | [`scripts/simulate-screening.js`](scripts/simulate-screening.js) |
+| Continuous ingestion (demo) | [`scripts/simulate-screening.js`](scripts/simulate-screening.js) (also **Compose service** `simulate-screening`) |

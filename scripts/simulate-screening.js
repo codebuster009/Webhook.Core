@@ -1,6 +1,7 @@
 /**
  * Mimics an upstream screening engine: POSTs events to the ingestion API on an interval.
  * Run from repo root: API_URL=http://localhost:3010 node scripts/simulate-screening.js
+ * Docker Compose also starts this as service `simulate-screening` (API_URL=http://backend:3000).
  *
  * Env:
  *   API_URL          — default http://localhost:3010
@@ -47,6 +48,20 @@ async function fetchPartners() {
     list = list.filter((p) => PARTNER_IDS_FILTER.has(p.id));
   }
   return list;
+}
+
+/** Poll until the API is up and at least one partner exists (Compose / seed order). */
+async function waitForPartners() {
+  for (;;) {
+    try {
+      const list = await fetchPartners();
+      if (list.length > 0) return list;
+      console.log('[sim] no partners yet — register one or run seed; retry in 5s…');
+    } catch (e) {
+      console.warn('[sim] API not ready:', e.message || e, '— retry in 5s');
+    }
+    await new Promise((r) => setTimeout(r, 5000));
+  }
 }
 
 async function ingestOne(partnerId, externalId, eventType, txnId, idx) {
@@ -136,14 +151,7 @@ async function main() {
     PARTNER_IDS: PARTNER_IDS_FILTER ? [...PARTNER_IDS_FILTER].join(',') : 'all active',
   });
 
-  const partners = await fetchPartners();
-  if (partners.length === 0) {
-    console.error(
-      '[sim] No partners found. Register partners or run seed first, then retry.\n' +
-        '  Example: cd backend && API_URL=http://localhost:3010 npm run seed'
-    );
-    process.exit(1);
-  }
+  const partners = await waitForPartners();
 
   console.log(
     `[sim] using ${partners.length} partner(s):`,

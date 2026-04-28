@@ -77,6 +77,21 @@ services:
     depends_on:
       - backend
 
+  # Continuous fake upstream screening traffic (same script as host: scripts/simulate-screening.js).
+  simulate-screening:
+    image: node:20-alpine
+    working_dir: /repo
+    volumes:
+      - ./:/repo
+    environment:
+      API_URL: http://backend:3000
+      INTERVAL_MS: ${SCREEN_INTERVAL_MS:-12000}
+      EVENTS_PER_TICK: ${SCREEN_EVENTS_PER_TICK:-4}
+    command: ["node", "scripts/simulate-screening.js"]
+    depends_on:
+      - backend
+    restart: unless-stopped
+
   # One-shot demo data: partners + sample events (requires profile `seed`).
   #   docker compose --profile seed run --rm seed-demo
   seed-demo:
