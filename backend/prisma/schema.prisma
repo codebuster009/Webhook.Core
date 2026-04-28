@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Partner {
+  id            String   @id @default(cuid())
+  name          String
+  webhookUrl    String
+  signingSecret String
+  status        String   @default("active")
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  events        Event[]
+
+  @@index([status])
+}
+
+model Event {
+  id              String    @id @default(cuid())
+  externalId      String    @unique
+  partnerId       String
+  transactionId   String
+  eventType       String
+  payload         Json
+  status          String    @default("pending")
+  attemptCount    Int       @default(0)
+  maxAttempts     Int       @default(5)
+  nextAttemptAt   DateTime  @default(now())
+  lastError       String?
+  lockedAt        DateTime?
+  lockedBy        String?
+  createdAt       DateTime  @default(now())
+  deliveredAt     DateTime?
+  partner         Partner   @relation(fields: [partnerId], references: [id])
+  attempts        DeliveryAttempt[]
+
+  @@index([status, nextAttemptAt])
+  @@index([partnerId, createdAt])
+  @@index([eventType])
+}
+
+model DeliveryAttempt {
+  id            String   @id @default(cuid())
+  eventId       String
+  attemptNumber Int
+  startedAt     DateTime
+  completedAt   DateTime?
+  responseCode  Int?
+  responseBody  String?
+  latencyMs     Int?
+  errorMessage  String?
+  outcome       String
+  event         Event    @relation(fields: [eventId], references: [id])
+
+  @@index([eventId, attemptNumber])
+}
