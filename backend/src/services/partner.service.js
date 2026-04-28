@@ -1,11 +1,12 @@
 const { generateSigningSecret } = require('../utils/signing');
+const { normalizeWebhookUrl } = require('../utils/webhookUrl');
 const partnerModel = require('../models/partner.model');
 
 async function createPartner(input) {
   const signingSecret = generateSigningSecret();
   const partner = await partnerModel.create({
     name: input.name,
-    webhookUrl: input.webhookUrl,
+    webhookUrl: normalizeWebhookUrl(input.webhookUrl),
     signingSecret,
     description: input.description ?? null,
     status: 'active',
@@ -28,7 +29,7 @@ async function getPartner(id) {
 async function updatePartner(id, input) {
   const data = {};
   if (input.name !== undefined) data.name = input.name;
-  if (input.webhookUrl !== undefined) data.webhookUrl = input.webhookUrl;
+  if (input.webhookUrl !== undefined) data.webhookUrl = normalizeWebhookUrl(input.webhookUrl);
   if (input.description !== undefined) data.description = input.description;
   if (input.status !== undefined) data.status = input.status;
   return partnerModel.update(id, data);

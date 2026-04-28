@@ -10,6 +10,18 @@ import {
 } from 'recharts';
 
 export default function DeliveriesLatencyChart({ deliveriesTs = [], latencyTs = [] }) {
+  if (!deliveriesTs.length) {
+    return (
+      <div className="flex h-[360px] w-full items-center justify-center rounded-md border border-dashed border-border/80 bg-surface/30 px-6 text-center">
+        <p className="max-w-md text-sm text-muted">
+          No successful deliveries in the last 24 hours (chart uses completed attempts with
+          outcome <span className="font-mono text-foreground/80">success</span> only). Failed
+          or retrying webhooks do not appear here.
+        </p>
+      </div>
+    );
+  }
+
   const data = deliveriesTs.map((d, i) => ({
     label: d.ts ? new Date(d.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : i,
     deliveries: d.deliveries ?? 0,

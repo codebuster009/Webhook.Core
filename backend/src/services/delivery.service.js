@@ -2,6 +2,7 @@ const { prisma } = require('../lib/prisma');
 const { signPayload } = require('../utils/hmac');
 const { postWebhook, captureRequestHeaders } = require('../utils/http');
 const { backoffSecondsAfterFailure } = require('../utils/backoff');
+const { normalizeWebhookUrl } = require('../utils/webhookUrl');
 
 function buildWebhookBody(event) {
   return JSON.stringify({
@@ -71,7 +72,8 @@ async function deliverClaimedRow(claimed) {
     'X-Webhook-Attempt': String(attemptNumber),
   };
   const requestHeadersSnapshot = captureRequestHeaders(outboundHeaders);
-  const httpResult = await postWebhook(event.partner.webhookUrl, {
+  const webhookUrl = normalizeWebhookUrl(event.partner.webhookUrl);
+  const httpResult = await postWebhook(webhookUrl, {
     headers: outboundHeaders,
     body: bodyString,
   });
