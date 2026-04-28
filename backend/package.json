@@ -9,7 +9,8 @@
     "worker": "node src/worker.js",
     "postinstall": "prisma generate",
     "migrate:deploy": "prisma migrate deploy",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "lint": "node --check src/server.js && node --check src/worker.js && node --check src/app.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

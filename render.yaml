@@ -1,0 +1,30 @@
+# Render.com blueprint-style outline (adjust env groups & plans for your account)
+services:
+  - type: web
+    name: webhook-core-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
+    healthCheckPath: /healthz
+
+  - type: worker
+    name: webhook-core-worker
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    dockerCommand: node src/worker.js
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: WORKER_CONCURRENCY
+        value: "4"
+
+databases:
+  - name: webhook-core-db
+    databaseName: webhook
+    user: webhook
