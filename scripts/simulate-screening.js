@@ -11,6 +11,8 @@
  *   DEDUP_EVERY      — if set (e.g. 20), after every N successful unique ingests, POST same external_id once (idempotent demo)
  */
 
+const { ensureDefaultPartner } = require('./ensure-default-partner.js');
+
 const api = process.env.API_URL || 'http://localhost:3010';
 const INTERVAL_MS = Math.max(1000, Number(process.env.INTERVAL_MS) || 12000);
 const EVENTS_PER_TICK = Math.min(20, Math.max(1, Number(process.env.EVENTS_PER_TICK) || 4));
@@ -50,13 +52,13 @@ async function fetchPartners() {
   return list;
 }
 
-/** Poll until the API is up and at least one partner exists (Compose / seed order). */
-async function waitForPartners() {
+/** After ensureDefaultPartner, poll until filtered partner list is non-empty (API flakiness / PARTNER_IDS). */
+async function waitForUsablePartners() {
   for (;;) {
     try {
       const list = await fetchPartners();
       if (list.length > 0) return list;
-      console.log('[sim] no partners yet — register one or run seed; retry in 5s…');
+      console.log('[sim] no partners match filter or list empty — retry in 5s…');
     } catch (e) {
       console.warn('[sim] API not ready:', e.message || e, '— retry in 5s');
     }
@@ -151,7 +153,13 @@ async function main() {
     PARTNER_IDS: PARTNER_IDS_FILTER ? [...PARTNER_IDS_FILTER].join(',') : 'all active',
   });
 
-  const partners = await waitForPartners();
+  await ensureDefaultPartner({
+    api,
+    mock: process.env.MOCK_URL,
+    silent: false,
+  });
+
+  const partners = await waitForUsablePartners();
 
   console.log(
     `[sim] using ${partners.length} partner(s):`,

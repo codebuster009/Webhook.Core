@@ -37,18 +37,21 @@ Services:
 | Backend API   | **3010**→3000 | Avoids clash when host **3000** is used by another app |
 | Worker        | —           | Same image as API, `node src/worker.js`    |
 | Mock partner  | 4001        | Random HTTP outcomes + HMAC verification   |
-| Frontend      | 5173        | nginx serving Vite build                   |
-| **Screening sim** | —       | [`scripts/simulate-screening.js`](scripts/simulate-screening.js) — **starts with Compose**; waits for ≥1 partner, then POSTs mixed events on an interval (`docker compose logs -f simulate-screening`) |
+| **default-partner** | —   | One-shot: creates **Demo Partner** if the DB has no partners; updates `mock-partner/partner-secrets.json` |
+| Frontend      | 5173        | Waits for `default-partner` to finish, then serves the Vite build |
+| **Screening sim** | —       | [`scripts/simulate-screening.js`](scripts/simulate-screening.js) — starts after `default-partner` exits; POSTs mixed events on an interval (`docker compose logs -f simulate-screening`) |
 
 The backend and worker containers run `prisma migrate deploy` automatically on startup, so the schema is created on first boot — no manual migrate step needed.
 
-### Why the dashboard looks empty at first
+### First boot: Demo Partner (automatic)
 
-Compose starts **local Postgres with a new empty volume**. Until you **seed** demo partners/events or register partners in the UI, Overview KPIs and event lists have nothing to show. That is expected — not a bug.
+On a **fresh database**, Compose runs [`scripts/ensure-default-partner.js`](scripts/ensure-default-partner.js) once (`default-partner` service). It registers **Demo Partner** with webhook `http://mock-partner:4001/webhook` and merges its signing secret into **`mock-partner/partner-secrets.json`** so the mock receiver can verify HMAC. If you already have partners, it does nothing.
 
-The **`simulate-screening`** container starts with the stack but **waits** (logs every 5s) until at least one partner exists, then begins posting events—so run seed or register a partner and events will start growing automatically.
+You should see **Demo Partner** on the **Partners** page without running seed. Event counts grow once **`simulate-screening`** starts ingesting (same `docker compose up`).
 
-### Load demo partners + sample events
+### Optional: more demo partners + sample events
+
+Use this when you want **multiple partners** and **~200 seeded events** (not required for the default flow above).
 
 Pick **one**:
 
@@ -84,7 +87,7 @@ If port **3000** is free on your machine, you can map the API as `"3000:3000"` i
 
 ### Live screening simulation (demos)
 
-**With Docker Compose**, the **`simulate-screening`** service runs automatically (same script as below; `API_URL=http://backend:3000` inside the network). Tune cadence with env **`SCREEN_INTERVAL_MS`** and **`SCREEN_EVENTS_PER_TICK`** in `.env` or the shell. Logs: `docker compose logs -f simulate-screening`. To disable the container and run the script on your host only: `docker compose stop simulate-screening`, then:
+**With Docker Compose**, **`default-partner`** creates **Demo Partner** when needed, then **`simulate-screening`** runs automatically (same script as below; `API_URL=http://backend:3000` inside the network). Tune cadence with env **`SCREEN_INTERVAL_MS`** and **`SCREEN_EVENTS_PER_TICK`** in `.env` or the shell. Logs: `docker compose logs -f simulate-screening`. To disable the container and run the script on your host only: `docker compose stop simulate-screening`, then:
 
 ```bash
 # From repo root; match host port to docker-compose (3010 in default compose)
@@ -114,14 +117,14 @@ End-to-end script for reviewers: **Compose stack → migrate → dashboard → s
    docker compose up --build -d
    ```
 2. **Migrations** run automatically on container startup (Prisma `migrate deploy`).
-3. **Data**: load demo partners/events — **`docker compose --profile seed run --rm seed-demo`** (see Quick start), or `npm run seed` from `backend/` with `API_URL=http://localhost:3010`, or register partners in the UI.
+3. **Partners & traffic**: **`default-partner`** creates **Demo Partner** on an empty DB automatically. **`simulate-screening`** posts ongoing synthetic ingestion. Optionally run **`docker compose --profile seed run --rm seed-demo`** (or `npm run seed`) for multiple partners + ~200 events—see Quick start.
 4. **Smoke checks** — default Compose publishes the API on host **3010** (see table above):
    ```bash
    curl -s http://localhost:3010/healthz
    curl -s -o /dev/null -w "%{http_code}" http://localhost:5173/
    ```
    Open **http://localhost:5173** → Overview shows KPIs and the live feed; **Events** refreshes near real-time.
-5. **Continuous ingestion** — the **`simulate-screening`** service runs with Compose and starts posting after at least one partner exists (use step 3 or the UI). Check logs: `docker compose logs -f simulate-screening`. To run the [same script](scripts/simulate-screening.js) on the host instead, run `docker compose stop simulate-screening` then:
+5. **Continuous ingestion** — **`simulate-screening`** runs after **`default-partner`** completes. Check logs: `docker compose logs -f simulate-screening`. To run the [same script](scripts/simulate-screening.js) on the host instead, run `docker compose stop simulate-screening` then:
    ```bash
    export API_URL=http://localhost:3010
    node scripts/simulate-screening.js

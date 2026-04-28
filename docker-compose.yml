@@ -65,6 +65,21 @@ services:
     volumes:
       - ./mock-partner/partner-secrets.json:/app/partner-secrets.json
 
+  # One-shot: if there are no partners, create "Demo Partner" and update mock secrets file.
+  default-partner:
+    image: node:20-alpine
+    container_name: webhook-default-partner
+    working_dir: /repo
+    volumes:
+      - ./:/repo
+    environment:
+      API_URL: http://backend:3000
+      MOCK_URL: http://mock-partner:4001
+    command: ["node", "scripts/ensure-default-partner.js"]
+    depends_on:
+      - backend
+    restart: "no"
+
   frontend:
     build:
       context: ./frontend
@@ -75,7 +90,10 @@ services:
     ports:
       - "5173:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+      default-partner:
+        condition: service_completed_successfully
 
   # Continuous fake upstream screening traffic (same script as host: scripts/simulate-screening.js).
   simulate-screening:
@@ -89,7 +107,10 @@ services:
       EVENTS_PER_TICK: ${SCREEN_EVENTS_PER_TICK:-4}
     command: ["node", "scripts/simulate-screening.js"]
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+      default-partner:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   # One-shot demo data: partners + sample events (requires profile `seed`).
