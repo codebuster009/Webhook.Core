@@ -25,11 +25,7 @@ Services:
 | Mock partner  | 4001        | Random HTTP outcomes + HMAC verification   |
 | Frontend      | 5173        | nginx serving Vite build                   |
 
-Apply migrations once (API container has Prisma CLI):
-
-```bash
-docker compose exec backend npx prisma migrate deploy
-```
+The backend and worker containers run `prisma migrate deploy` automatically on startup, so the schema is created on first boot — no manual migrate step needed.
 
 Seed demo partners + 200 sample events (expects API reachable from your shell):
 
@@ -75,10 +71,7 @@ End-to-end script for reviewers: **Compose stack → migrate → dashboard → s
    docker compose down -v
    docker compose up --build -d
    ```
-2. **Migrations** (waits until Postgres is healthy):
-   ```bash
-   docker compose exec backend npx prisma migrate deploy
-   ```
+2. **Migrations** run automatically on container startup (Prisma `migrate deploy`).
 3. **Data** (optional if DB is empty): seed demo partners/events — see **Quick start (Docker Compose)** and the `npm run seed` block above, or register partners in the UI.
 4. **Smoke checks** — default Compose publishes the API on host **3010** (see table above):
    ```bash

@@ -41,7 +41,7 @@ services:
       context: ./backend
     container_name: webhook-worker
     restart: unless-stopped
-    command: ["node", "src/worker.js"]
+    command: ["sh", "-c", "npx prisma migrate deploy && node src/worker.js"]
     environment:
       NODE_ENV: production
       LOG_LEVEL: info
