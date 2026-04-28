@@ -86,8 +86,8 @@ export default function Partners() {
         <div className="flex items-center justify-between border-b border-white/10 pb-2">
           <span className="font-mono text-xs text-white/70">partner_config.json</span>
           <Button
-            variant="secondary"
-            className="!border-white/20 !text-white !px-3 !py-1 text-xs"
+            variant="onDark"
+            className="!px-3 !py-1 text-xs uppercase tracking-wide"
             type="button"
             onClick={() =>
               navigator.clipboard.writeText(
