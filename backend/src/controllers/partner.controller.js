@@ -1,5 +1,7 @@
 const partnerService = require('../services/partner.service');
+const eventService = require('../services/event.service');
 const { HttpError } = require('../middleware/error.middleware');
+const { v4: uuidv4 } = require('uuid');
 
 async function create(req, res, next) {
   try {
@@ -86,10 +88,37 @@ function toPartnerResponse(partner, options = {}) {
   return { ...base, signingSecret: '***' };
 }
 
+async function sendTest(req, res, next) {
+  try {
+    const partner = await partnerService.getPartner(req.params.id);
+    if (!partner) {
+      throw new HttpError(404, 'NOT_FOUND', 'Partner not found');
+    }
+    if (partner.status !== 'active') {
+      throw new HttpError(400, 'PARTNER_DISABLED', 'Partner is disabled');
+    }
+    const externalId = `test_${uuidv4()}`;
+    const { event, created } = await eventService.ingest({
+      externalId,
+      partnerId: partner.id,
+      transactionId: `txn_test_${Date.now()}`,
+      eventType: 'TXN_SCREENED',
+      payload: { synthetic_test: true },
+    });
+    res.status(created ? 202 : 200).json({
+      ok: true,
+      data: { event_id: event.id, external_id: event.externalId, created },
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
 module.exports = {
   create,
   list,
   getById,
   update,
   remove,
+  sendTest,
 };

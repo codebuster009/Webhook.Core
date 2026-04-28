@@ -20,6 +20,7 @@ const router = Router();
 
 router.post('/', validateBody(createSchema), partnerController.create);
 router.get('/', partnerController.list);
+router.post('/:id/test', partnerController.sendTest);
 router.get('/:id', partnerController.getById);
 router.patch('/:id', validateBody(updateSchema), partnerController.update);
 router.delete('/:id', partnerController.remove);
