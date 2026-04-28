@@ -24,13 +24,18 @@ async function deliverClaimedRow(claimed) {
     return;
   }
 
+  const attemptNumber =
+    claimed.attemptCount ??
+    claimed.attemptcount ??
+    event.attemptCount;
+
   if (event.partner.status !== 'active') {
     const startedAt = new Date();
     await prisma.$transaction([
       prisma.deliveryAttempt.create({
         data: {
           eventId: event.id,
-          attemptNumber: event.attemptCount,
+          attemptNumber,
           startedAt,
           completedAt: startedAt,
           responseCode: null,
@@ -56,7 +61,6 @@ async function deliverClaimedRow(claimed) {
   const bodyString = buildWebhookBody(event);
   const timestampMs = Date.now().toString();
   const signature = signPayload(event.partner.signingSecret, bodyString);
-  const attemptNumber = event.attemptCount;
 
   const startedAt = new Date();
   const httpResult = await postWebhook(event.partner.webhookUrl, {

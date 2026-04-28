@@ -22,7 +22,7 @@ function findById(id) {
   return prisma.event.findUnique({
     where: { id },
     include: {
-      attempts: { orderBy: { attemptNumber: 'desc' } },
+      attempts: { orderBy: { attemptNumber: 'asc' } },
       partner: true,
     },
   });

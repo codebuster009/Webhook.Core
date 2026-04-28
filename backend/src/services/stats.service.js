@@ -18,7 +18,7 @@ async function getOverview() {
   const failed60 = await prisma.event.count({
     where: {
       status: 'failed',
-      updatedAt: { gte: hourAgo },
+      attempts: { some: { completedAt: { gte: hourAgo } } },
     },
   });
   const finished = delivered60 + failed60;
