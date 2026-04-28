@@ -8,10 +8,16 @@ services:
       POSTGRES_PASSWORD: webhook
       POSTGRES_DB: webhook
     ports:
-      # Avoid clash when host Postgres or another stack uses 5432
+      # Use 5433 on host if another Postgres owns 5432 locally
       - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U webhook -d webhook"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
   backend:
     build:
@@ -19,15 +25,15 @@ services:
     container_name: webhook-api
     restart: unless-stopped
     ports:
-      # Host 3000 is often taken; use 3010 on host → 3000 in container
-      - "3010:3000"
+      - "3000:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
       LOG_LEVEL: info
       DATABASE_URL: postgresql://webhook:webhook@postgres:5432/webhook?schema=public
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   worker:
     build:
@@ -42,7 +48,8 @@ services:
       WORKER_CONCURRENCY: 4
       LEASE_SWEEP_MS: 30000
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
   mock-partner:
     build:
@@ -61,7 +68,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:3010
+        VITE_API_BASE_URL: http://localhost:3000
     container_name: webhook-frontend
     restart: unless-stopped
     ports:

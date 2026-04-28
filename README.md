@@ -19,7 +19,7 @@ Services:
 
 | Service       | Port (host) | Notes                                      |
 |---------------|-------------|--------------------------------------------|
-| Postgres      | 5432        | `DATABASE_URL` defaults in compose         |
+| Postgres      | 5433→5432   | Host port 5433 if 5432 is taken locally   |
 | Backend API   | 3000        | `GET /healthz`, `/api/v1/*`                |
 | Worker        | —           | Same image as API, `node src/worker.js`    |
 | Mock partner  | 4001        | Random HTTP outcomes + HMAC verification   |
@@ -37,7 +37,7 @@ Seed demo partners + 200 sample events (expects API reachable from your shell):
 cd backend
 cp ../.env.example .env   # adjust DATABASE_URL if not using compose defaults
 npm install
-export API_URL=http://localhost:3010
+export API_URL=http://localhost:3000
 export MOCK_URL=http://mock-partner:4001
 npm run seed
 ```
@@ -99,7 +99,15 @@ See [DESIGN.md](./DESIGN.md) for delivery internals and trade-offs.
 
 ## Screenshots
 
-Reference UI exports live in `docs/screenshots/` (Overview, Events, Detail, Partners).
+Captured from the Compose-backed dashboard (`docker compose up`) with seed data.
+
+| File | Description |
+|------|-------------|
+| [docs/screenshots/01-overview.png](docs/screenshots/01-overview.png) | Overview — KPIs, chart, live feed |
+| [docs/screenshots/02-events-list.png](docs/screenshots/02-events-list.png) | Events list with status filter |
+| [docs/screenshots/03-event-detail.png](docs/screenshots/03-event-detail.png) | Event detail — payload + attempts |
+| [docs/screenshots/04-partners.png](docs/screenshots/04-partners.png) | Partners grid |
+| [docs/screenshots/05-register-modal.png](docs/screenshots/05-register-modal.png) | Register Partner — signing secret (demo query `?register=1&demoSecret=1` for static shots) |
 
 ## Tech stack
 

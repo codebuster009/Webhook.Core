@@ -97,6 +97,8 @@ app.post('/webhook', express.raw({ type: 'application/json', limit: '1mb' }), (r
 
 app.get('/healthz', (req, res) => res.json({ ok: true }));
 
+app.get('/', (req, res) => res.status(200).json({ ok: true, service: 'mock-partner' }));
+
 app.listen(PORT, () => {
   console.log(`mock-partner listening on ${PORT}`);
 });

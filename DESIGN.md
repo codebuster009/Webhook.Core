@@ -1,6 +1,6 @@
 # Webhook.Core — design notes (assignment topics)
 
-This document maps take-home topics to **concrete code**. Line numbers refer to the repository state on branch `kartavya-dev-webhook` and may drift slightly as files evolve—search by symbol if needed.
+This document maps take-home topics to **concrete code**. Paths refer to the repository on `master` and may drift slightly as files evolve—search by symbol if needed.
 
 ## 1) Data model
 
