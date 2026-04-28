@@ -4,7 +4,7 @@ Financial webhook ingestion and delivery platform: HTTP ingestion API, Postgres-
 
 ## Prerequisites
 
-- Docker + Docker Compose v2  
+- **Docker** and **Docker Compose v2** — if you do not have them yet, [install Docker Desktop](https://docs.docker.com/get-docker/) (macOS/Windows) or [Docker Engine + Compose plugin](https://docs.docker.com/engine/install/) (Linux). The `docker compose` commands in this README assume a working local Docker install.
 - Node.js **20** (for local dev outside compose)
 
 ## Quick start (Docker Compose)
