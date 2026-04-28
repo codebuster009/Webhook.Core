@@ -42,6 +42,16 @@ services:
     depends_on:
       - postgres
 
+  mock-partner:
+    build:
+      context: ./mock-partner
+    container_name: webhook-mock-partner
+    restart: unless-stopped
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./mock-partner/partner-secrets.json:/app/partner-secrets.json
+
   frontend:
     build:
       context: ./frontend

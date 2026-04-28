@@ -6,6 +6,7 @@ const { backoffSecondsAfterFailure } = require('../utils/backoff');
 function buildWebhookBody(event) {
   return JSON.stringify({
     id: event.id,
+    partner_id: event.partnerId,
     event_type: event.eventType,
     transaction_id: event.transactionId,
     external_id: event.externalId,
