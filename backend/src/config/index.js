@@ -5,7 +5,7 @@ const envSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
   PORT: Joi.number().port().default(3000),
   LOG_LEVEL: Joi.string().default('info'),
-  DATABASE_URL: Joi.string().allow('').optional(),
+  DATABASE_URL: Joi.string().uri({ scheme: ['postgresql', 'postgres'] }).required(),
 }).unknown(true);
 
 const { value, error } = envSchema.validate(process.env);
