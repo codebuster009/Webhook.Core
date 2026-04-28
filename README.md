@@ -37,8 +37,8 @@ Seed demo partners + 200 sample events (expects API reachable from your shell):
 cd backend
 cp ../.env.example .env   # adjust DATABASE_URL if not using compose defaults
 npm install
-export API_URL=http://localhost:3000
-export MOCK_URL=http://localhost:4001   # use http://mock-partner:4001 from inside compose network
+export API_URL=http://localhost:3010
+export MOCK_URL=http://mock-partner:4001
 npm run seed
 ```
 
