@@ -19,7 +19,7 @@ git checkout master
 
 (Replace the URL with your fork if applicable.)
 
-## Quick start (Docker Compose)
+## Quick startf (Docker Compose)
 
 ### Start the stack
 
@@ -107,7 +107,7 @@ In **Docker Compose**, set **`SCREEN_INTERVAL_MS`** and **`SCREEN_EVENTS_PER_TIC
 
 Stop: **Ctrl+C** when running on the host, or `docker compose stop simulate-screening` for the container.
 
-## Live demo (interview)
+## Live
 
 End-to-end script for reviewers: **Compose stack → migrate → dashboard → screening simulator → mock partner logs**.
 
