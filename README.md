@@ -62,7 +62,7 @@ node scripts/simulate-screening.js
 
 Stop with **Ctrl+C**.
 
-## Live demo (interview)
+## Demo 
 
 End-to-end script for reviewers: **Compose stack → migrate → dashboard → screening simulator → mock partner logs**.
 
