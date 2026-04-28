@@ -1,14 +1,21 @@
+require('dotenv').config();
 const { config } = require('./config');
 const { createLogger } = require('./config/logger');
-const express = require('express');
+const { createApp } = require('./app');
+const { prisma } = require('./lib/prisma');
 
 const logger = createLogger(config);
-const app = express();
+const app = createApp();
 
-app.get('/healthz', (req, res) => {
-  res.json({ ok: true, data: { ok: true, db: false } });
-});
-
-app.listen(config.port, () => {
+const server = app.listen(config.port, () => {
   logger.info({ port: config.port }, 'API started');
 });
+
+async function shutdown() {
+  logger.info('Shutting down');
+  await prisma.$disconnect();
+  server.close(() => process.exit(0));
+}
+
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
