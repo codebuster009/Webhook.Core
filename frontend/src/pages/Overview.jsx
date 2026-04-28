@@ -11,7 +11,7 @@ import { EmptyState } from '../components/ui/EmptyState.jsx';
 
 export default function Overview() {
   const navigate = useNavigate();
-  const { data, isLoading, isError, refetch } = useStatsOverview();
+  const { data, isLoading, isError, refetch, isFetching } = useStatsOverview();
 
   if (isLoading || !data) {
     return (
@@ -47,23 +47,38 @@ export default function Overview() {
   const fl = data.failed_last_60m ?? 0;
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink">
+    <div className="space-y-8 rounded-2xl border border-border/80 bg-gradient-to-br from-white via-white to-surface/40 p-6 shadow-sm md:p-8">
+      <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        <div className="max-w-xl space-y-2">
+          <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
+            Operations overview
+          </p>
+          <h1 className="text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             Delivery Dashboard
           </h1>
-          <p className="text-sm text-muted">
-            Real-time infrastructure monitoring for institutional endpoints.
+          <p className="text-sm leading-relaxed text-muted">
+            Ingestion throughput, delivery health, and recent webhook activity across partner
+            endpoints—refreshed automatically.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
+            <span
+              className={`h-2 w-2 rounded-full bg-green-500 ${isFetching ? 'animate-pulse' : ''}`}
+            />
             <span className="text-[11px] font-bold uppercase text-green-700">
               System operational
             </span>
           </div>
+          {isFetching && (
+            <div className="flex items-center gap-2 rounded-full border border-accent/35 bg-accent/5 px-3 py-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+              </span>
+              <span className="text-[11px] font-bold uppercase text-primary">Live · updating</span>
+            </div>
+          )}
           <Button
             type="button"
             className="flex items-center gap-2"
@@ -74,7 +89,7 @@ export default function Overview() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-gutter md:grid-cols-2 lg:grid-cols-4" data-tour="overview-kpi">
         <KpiCard label="Ingestion Rate">
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-semibold">{ir.toFixed(1)}</span>
@@ -99,7 +114,10 @@ export default function Overview() {
       </div>
 
       <div className="grid grid-cols-1 gap-gutter lg:grid-cols-3">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 lg:col-span-2">
+        <div
+          className="rounded-lg border border-gray-200 bg-white p-6 lg:col-span-2"
+          data-tour="overview-chart"
+        >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold">Deliveries vs. Latency</h2>
             <div className="flex gap-4 text-[11px] font-mono uppercase text-muted">
@@ -116,7 +134,11 @@ export default function Overview() {
             latencyTs={data.latency_timeseries}
           />
         </div>
-        <div id="live" className="rounded-lg border border-gray-200 bg-white p-6">
+        <div
+          id="live"
+          data-tour="overview-live"
+          className="rounded-lg border border-gray-200 bg-white p-6"
+        >
           <h2 className="mb-4 text-lg font-semibold">Live Events</h2>
           <LiveEventsFeed items={data.live_events} />
         </div>

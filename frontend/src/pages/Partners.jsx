@@ -39,7 +39,10 @@ export default function Partners() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div
+        className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+        data-tour="partners-header"
+      >
         <div>
           <h1 className="text-2xl font-semibold">Partners</h1>
           <p className="text-sm text-muted">Registered webhook endpoints</p>
@@ -49,12 +52,13 @@ export default function Partners() {
         </Button>
       </div>
 
-      <div className="grid gap-gutter md:grid-cols-3">
+      <div className="grid gap-gutter md:grid-cols-3" data-tour="partners-kpis">
         <Kpi title="Total Partners" value={kpis.total} />
         <Kpi title="Active Endpoints" value={kpis.active} />
         <Kpi title="Avg Success Rate" value={`${kpis.avgSuccess.toFixed(1)}%`} accent />
       </div>
 
+      <div data-tour="partners-body">
       {partners.length === 0 ? (
         <EmptyState title="No partners yet" description="Register an endpoint to begin." />
       ) : (
@@ -73,8 +77,12 @@ export default function Partners() {
           ))}
         </div>
       )}
+      </div>
 
-      <div className="rounded-lg border border-gray-900 bg-[#0B0B0F] p-4 text-emerald-100">
+      <div
+        className="rounded-lg border border-gray-900 bg-[#0B0B0F] p-4 text-emerald-100"
+        data-tour="partners-config"
+      >
         <div className="flex items-center justify-between border-b border-white/10 pb-2">
           <span className="font-mono text-xs text-white/70">partner_config.json</span>
           <Button

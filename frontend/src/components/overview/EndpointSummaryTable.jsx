@@ -1,9 +1,14 @@
+import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
 export default function EndpointSummaryTable({ rows = [] }) {
   const [range, setRange] = useState('24h');
+  const navigate = useNavigate();
   return (
-    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+    <div
+      className="overflow-hidden rounded-lg border border-gray-200 bg-white"
+      data-tour="overview-endpoints"
+    >
       <div className="flex items-center justify-between border-b border-gray-100 px-6 py-3">
         <h2 className="text-lg font-semibold">Endpoint Monitoring Summary</h2>
         <div className="flex rounded-lg bg-gray-50 p-1">
@@ -64,7 +69,8 @@ export default function EndpointSummaryTable({ rows = [] }) {
                   <td className="px-6 py-3">
                     <button
                       type="button"
-                      className="text-xs font-medium text-muted group-hover:text-black"
+                      onClick={() => navigate(`/events?partner_id=${encodeURIComponent(r.partner_id)}`)}
+                      className="text-xs font-medium text-accent underline-offset-2 hover:underline"
                     >
                       VIEW LOGS
                     </button>

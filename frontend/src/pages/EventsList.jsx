@@ -78,7 +78,7 @@ export default function EventsList() {
     return p;
   }, [filters]);
 
-  const { data, isLoading, isError, refetch } = useEvents(queryParams);
+  const { data, isLoading, isError, refetch, isFetching } = useEvents(queryParams);
 
   const events = data?.events ?? [];
   const total = data?.total ?? 0;
@@ -151,10 +151,27 @@ export default function EventsList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div
+        className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+        data-tour="events-header"
+      >
         <div>
-          <h1 className="text-2xl font-semibold">Events</h1>
-          <p className="text-sm text-muted">All webhook delivery events across partners.</p>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold">Events</h1>
+            {isFetching && data ? (
+              <div className="flex items-center gap-2 rounded-full border border-accent/35 bg-accent/5 px-3 py-1">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
+                </span>
+                <span className="text-[11px] font-bold uppercase text-primary">Live · updating</span>
+              </div>
+            ) : null}
+          </div>
+          <p className="mt-1 text-sm text-muted">
+            All webhook delivery events across partners. The table polls the API about every half second so
+            new rows appear quickly while the simulator or worker is running.
+          </p>
         </div>
         <div className="flex flex-wrap gap-3">
           <Button variant="secondary" type="button" onClick={() => setTestOpen(true)}>
@@ -166,7 +183,7 @@ export default function EventsList() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-gray-200 bg-white p-4">
+      <div className="rounded-lg border border-gray-200 bg-white p-4" data-tour="events-filters">
         <EventFilters
           partners={partners}
           partnerId={filters.partner_id}
@@ -180,6 +197,7 @@ export default function EventsList() {
         />
       </div>
 
+      <div data-tour="events-body">
       {events.length === 0 ? (
         hasActiveFilters ? (
           <EmptyState
@@ -275,6 +293,7 @@ export default function EventsList() {
         </div>
       </div>
       ) : null}
+      </div>
 
       <Modal
         open={testOpen}
