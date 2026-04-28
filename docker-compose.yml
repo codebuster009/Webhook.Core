@@ -8,7 +8,8 @@ services:
       POSTGRES_PASSWORD: webhook
       POSTGRES_DB: webhook
     ports:
-      - "5432:5432"
+      # Avoid clash when host Postgres or another stack uses 5432
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -18,7 +19,8 @@ services:
     container_name: webhook-api
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      # Host 3000 is often taken; use 3010 on host → 3000 in container
+      - "3010:3000"
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -49,6 +51,9 @@ services:
     restart: unless-stopped
     ports:
       - "4001:4001"
+    environment:
+      # Set to 1 in .env for always-200 mock responses (reliable UI demos)
+      DEMO_ALWAYS_OK: ${DEMO_ALWAYS_OK:-0}
     volumes:
       - ./mock-partner/partner-secrets.json:/app/partner-secrets.json
 
@@ -56,7 +61,7 @@ services:
     build:
       context: ./frontend
       args:
-        VITE_API_BASE_URL: http://localhost:3000
+        VITE_API_BASE_URL: http://localhost:3010
     container_name: webhook-frontend
     restart: unless-stopped
     ports:

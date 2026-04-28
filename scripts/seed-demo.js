@@ -6,7 +6,8 @@ async function main() {
   const mock =
     process.env.MOCK_URL ||
     process.env.MOCK_WEBHOOK_BASE ||
-    'http://localhost:4001';
+    /* Worker runs in Docker; localhost would target the container, not the mock */
+    'http://mock-partner:4001';
 
   const specs = [
     { name: 'Alpha Clearing', slug: 'alpha' },

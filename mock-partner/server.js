@@ -5,6 +5,8 @@ const express = require('express');
 
 const PORT = Number(process.env.PORT || 4001);
 const SECRETS_FILE = process.env.SECRETS_FILE || path.join(__dirname, 'partner-secrets.json');
+/** Set DEMO_ALWAYS_OK=1 for predictable 200 responses (e.g. live demos). Default: random flaky outcomes. */
+const DEMO_ALWAYS_OK = process.env.DEMO_ALWAYS_OK === '1' || process.env.DEMO_ALWAYS_OK === 'true';
 
 function loadSecrets() {
   try {
@@ -80,7 +82,7 @@ app.post('/webhook', express.raw({ type: 'application/json', limit: '1mb' }), (r
     sig_ok: Boolean(secret),
   });
 
-  const outcome = randomOutcome();
+  const outcome = DEMO_ALWAYS_OK ? 'ok' : randomOutcome();
   if (outcome === 'timeout') {
     setTimeout(() => {
       res.status(200).send('slow');
