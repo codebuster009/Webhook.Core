@@ -27,5 +27,20 @@ services:
     depends_on:
       - postgres
 
+  worker:
+    build:
+      context: ./backend
+    container_name: webhook-worker
+    restart: unless-stopped
+    command: ["node", "src/worker.js"]
+    environment:
+      NODE_ENV: production
+      LOG_LEVEL: info
+      DATABASE_URL: postgresql://webhook:webhook@postgres:5432/webhook?schema=public
+      WORKER_CONCURRENCY: 4
+      LEASE_SWEEP_MS: 30000
+    depends_on:
+      - postgres
+
 volumes:
   postgres_data:
