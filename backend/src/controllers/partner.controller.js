@@ -1,6 +1,7 @@
 const partnerService = require('../services/partner.service');
 const eventService = require('../services/event.service');
 const { HttpError } = require('../middleware/error.middleware');
+const { normalizeWebhookUrl } = require('../utils/webhookUrl');
 const { v4: uuidv4 } = require('uuid');
 
 async function create(req, res, next) {
@@ -76,7 +77,7 @@ function toPartnerResponse(partner, options = {}) {
   const base = {
     id: partner.id,
     name: partner.name,
-    webhookUrl: partner.webhookUrl,
+    webhookUrl: normalizeWebhookUrl(partner.webhookUrl),
     status: partner.status,
     description: partner.description,
     createdAt: partner.createdAt,

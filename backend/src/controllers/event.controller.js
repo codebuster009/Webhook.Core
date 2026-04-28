@@ -1,5 +1,6 @@
 const eventService = require('../services/event.service');
 const { HttpError } = require('../middleware/error.middleware');
+const { normalizeWebhookUrl } = require('../utils/webhookUrl');
 
 function mapEvent(e) {
   if (!e) return null;
@@ -18,7 +19,11 @@ function mapEvent(e) {
     created_at: e.createdAt,
     delivered_at: e.deliveredAt,
     partner: e.partner
-      ? { id: e.partner.id, name: e.partner.name, webhookUrl: e.partner.webhookUrl }
+      ? {
+          id: e.partner.id,
+          name: e.partner.name,
+          webhookUrl: normalizeWebhookUrl(e.partner.webhookUrl),
+        }
       : undefined,
   };
 }

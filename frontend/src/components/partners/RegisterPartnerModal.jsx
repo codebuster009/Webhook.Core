@@ -4,10 +4,13 @@ import { Modal } from '../ui/Modal.jsx';
 import { Button } from '../ui/Button.jsx';
 import { createPartner } from '../../services/partners.api.js';
 
+/** Default for Docker Compose: worker must reach the mock by service name (not localhost). */
+const DEFAULT_COMPOSE_WEBHOOK_URL = 'http://mock-partner:4001/webhook';
+
 export default function RegisterPartnerModal({ open, onClose, onCreated }) {
   const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
-  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookUrl, setWebhookUrl] = useState(DEFAULT_COMPOSE_WEBHOOK_URL);
   const [description, setDescription] = useState('');
   const [secret, setSecret] = useState('');
   const [busy, setBusy] = useState(false);
@@ -36,7 +39,7 @@ export default function RegisterPartnerModal({ open, onClose, onCreated }) {
 
   function close() {
     setName('');
-    setWebhookUrl('');
+    setWebhookUrl(DEFAULT_COMPOSE_WEBHOOK_URL);
     setDescription('');
     setSecret('');
     onClose();
