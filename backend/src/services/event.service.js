@@ -25,15 +25,22 @@ async function ingest(input) {
     return { event: existing, created: false };
   }
 
-  const event = await eventModel.create({
-    externalId: input.externalId,
-    partnerId: input.partnerId,
-    transactionId: input.transactionId,
-    eventType: input.eventType,
-    payload: input.payload,
-  });
-
-  return { event, created: true };
+  try {
+    const event = await eventModel.create({
+      externalId: input.externalId,
+      partnerId: input.partnerId,
+      transactionId: input.transactionId,
+      eventType: input.eventType,
+      payload: input.payload,
+    });
+    return { event, created: true };
+  } catch (e) {
+    if (e.code === 'P2002') {
+      const dup = await eventModel.findByExternalId(input.externalId);
+      if (dup) return { event: dup, created: false };
+    }
+    throw e;
+  }
 }
 
 async function listEvents(query) {
