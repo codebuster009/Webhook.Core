@@ -78,7 +78,14 @@ export default function RegisterPartnerModal({ open, onClose, onCreated }) {
               className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
               value={webhookUrl}
               onChange={(e) => setWebhookUrl(e.target.value)}
+              placeholder="http://mock-partner:4001/webhook"
             />
+            <span className="mt-1 block text-xs text-muted">
+              If API + worker run in Docker Compose, use the service hostname{' '}
+              <code className="text-ink">mock-partner</code> (not{' '}
+              <code className="text-ink">localhost</code>) so the worker can reach the mock. Path:{' '}
+              <code className="text-ink">/webhook</code>.
+            </span>
           </label>
           <label className="block text-sm">
             Description

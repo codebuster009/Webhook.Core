@@ -30,7 +30,15 @@ export default function AttemptHistoryTable({ attempts = [] }) {
                   a.response_code >= 400 ? 'text-error font-semibold' : ''
                 }`}
               >
-                {a.response_code ?? '—'}
+                {a.response_code != null ? (
+                  a.response_code
+                ) : a.error_message ? (
+                  <span className="text-error" title={a.error_message}>
+                    {a.error_message}
+                  </span>
+                ) : (
+                  '—'
+                )}
               </td>
               <td className="px-4 py-3 font-mono text-xs">{a.latency_ms ?? '—'}ms</td>
               <td className="px-4 py-3">

@@ -77,7 +77,12 @@ export default function EditPartnerModal({ open, partner, onClose, onSaved }) {
             className="mt-1 w-full rounded-md border border-gray-200 px-3 py-2 text-sm"
             value={webhookUrl}
             onChange={(e) => setWebhookUrl(e.target.value)}
+            placeholder="http://mock-partner:4001/webhook"
           />
+          <span className="mt-1 block text-xs text-muted">
+            Docker Compose: use <code className="text-ink">http://mock-partner:4001/webhook</code> so
+            the worker container can deliver to the mock.
+          </span>
         </label>
         <label className="block text-sm">
           Description

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { useStatsOverview } from '../hooks/useStats.js';
 import { Button } from '../components/ui/Button.jsx';
 import { Download, Bell } from 'lucide-react';
@@ -9,6 +10,7 @@ import { Skeleton } from '../components/ui/Skeleton.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 
 export default function Overview() {
+  const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useStatsOverview();
 
   if (isLoading || !data) {
@@ -62,8 +64,12 @@ export default function Overview() {
               System operational
             </span>
           </div>
-          <Button type="button" className="flex items-center gap-2">
-            <Download size={18} /> Export Report
+          <Button
+            type="button"
+            className="flex items-center gap-2"
+            onClick={() => navigate('/events')}
+          >
+            <Download size={18} /> Export report (events)
           </Button>
         </div>
       </div>
