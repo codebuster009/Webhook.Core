@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { RefreshCw, ShieldCheck } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '../components/ui/Button.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
 import { Skeleton } from '../components/ui/Skeleton.jsx';
 import AttemptHistoryTable from '../components/events/AttemptHistoryTable.jsx';
 import RawJsonPanel from '../components/events/RawJsonPanel.jsx';
 import EventStatusPill from '../components/events/EventStatusPill.jsx';
+import SignatureDeliveryBadge from '../components/events/SignatureDeliveryBadge.jsx';
 import { useEventDetail } from '../hooks/useEventDetail.js';
 import { redeliverEvent } from '../services/events.api.js';
 import { formatLatency, truncateMiddle } from '../lib/format.js';
@@ -48,8 +49,9 @@ export default function EventDetail() {
   }
 
   const { event, attempts = [] } = data;
-  const last = attempts[0];
-  const finalLatency = last?.latency_ms;
+  const latestAttempt =
+    attempts.length > 0 ? attempts[attempts.length - 1] : null;
+  const finalLatency = latestAttempt?.latency_ms;
 
   return (
     <div className="space-y-6">
@@ -64,7 +66,8 @@ export default function EventDetail() {
           </div>
           <h1 className="mt-2 text-2xl font-semibold">Event Detail</h1>
           <p className="text-sm text-muted">
-            {event.event_type} • {event.transaction_id}
+            {event.event_type} •{' '}
+            <span className="font-mono text-xs">{event.transaction_id}</span>
           </p>
         </div>
         <Button type="button" disabled={busy} onClick={retry} className="gap-2">
@@ -105,14 +108,7 @@ export default function EventDetail() {
             />
           </div>
         </div>
-        <div className="flex items-center justify-center rounded-lg border border-gray-200 bg-white p-6">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <ShieldCheck className="h-10 w-10 text-accent" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-muted">
-              Signature verified
-            </span>
-          </div>
-        </div>
+        <SignatureDeliveryBadge latestAttempt={latestAttempt} />
       </div>
 
       <RawJsonPanel value={event.payload} />

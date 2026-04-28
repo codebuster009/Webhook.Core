@@ -11,6 +11,8 @@ export default function EditPartnerModal({ open, partner, onClose, onSaved }) {
 
   useEffect(() => {
     if (partner) {
+      // Modal receives partner prop from parent — sync local form state when switching rows.
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- controlled reset when `partner` identity changes
       setName(partner.name || '');
       setWebhookUrl(partner.webhookUrl || '');
       setDescription(partner.description || '');

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../components/ui/Button.jsx';
 import { EmptyState } from '../components/ui/EmptyState.jsx';
@@ -13,10 +13,13 @@ import { sendTestEvent } from '../services/partners.api.js';
 
 export default function Partners() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const qc = useQueryClient();
   const { data: partners = [], isLoading } = usePartners();
   const { data: stats } = useStatsOverview();
-  const [registerOpen, setRegisterOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(
+    () => searchParams.get('register') === '1'
+  );
   const [editPartner, setEditPartner] = useState(null);
 
   const kpis = useMemo(() => {

@@ -1,12 +1,21 @@
 import clsx from 'clsx';
-import { STATUS_STYLE } from '../../lib/constants.js';
+import { STATUS_PILL_CLASS } from '../../lib/constants.js';
+
+function formatStatus(status) {
+  if (!status) return '';
+  return String(status).replace(/_/g, ' ').toUpperCase();
+}
 
 export default function EventStatusPill({ status }) {
-  const st = STATUS_STYLE[status] || STATUS_STYLE.pending;
+  const cls = STATUS_PILL_CLASS[status] || STATUS_PILL_CLASS.pending;
   return (
-    <span className="inline-flex items-center gap-2 font-mono text-xs uppercase">
-      <span className={clsx('h-2 w-2 rounded-full', st.dot)} />
-      <span className={clsx(st.text)}>{status}</span>
+    <span
+      className={clsx(
+        'inline-flex rounded-full px-2.5 py-0.5 font-mono text-[11px] font-semibold uppercase',
+        cls
+      )}
+    >
+      {formatStatus(status)}
     </span>
   );
 }

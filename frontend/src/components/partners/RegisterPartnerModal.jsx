@@ -1,14 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Modal } from '../ui/Modal.jsx';
 import { Button } from '../ui/Button.jsx';
 import { createPartner } from '../../services/partners.api.js';
 
 export default function RegisterPartnerModal({ open, onClose, onCreated }) {
+  const [searchParams] = useSearchParams();
   const [name, setName] = useState('');
   const [webhookUrl, setWebhookUrl] = useState('');
   const [description, setDescription] = useState('');
   const [secret, setSecret] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (open && searchParams.get('demoSecret') === '1') {
+      setSecret('whsec_demo_screenshot_placeholder_only');
+    }
+  }, [open, searchParams]);
 
   async function submit() {
     setBusy(true);

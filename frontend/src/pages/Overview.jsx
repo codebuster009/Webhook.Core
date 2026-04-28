@@ -18,10 +18,10 @@ export default function Overview() {
       <div className="space-y-6">
         <Skeleton className="h-10 w-2/3" />
         <div className="grid gap-gutter md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
+          <Skeleton className="h-24" />
         </div>
       </div>
     );

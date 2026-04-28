@@ -10,8 +10,9 @@ import EventStatusPill from '../components/events/EventStatusPill.jsx';
 import EventTypeBadge from '../components/events/EventTypeBadge.jsx';
 import { useEvents } from '../hooks/useEvents.js';
 import { usePartners } from '../hooks/usePartners.js';
-import { formatRelative } from '../lib/format.js';
 import { sendTestEvent } from '../services/partners.api.js';
+import { formatRelative } from '../lib/format.js';
+import { Inbox } from 'lucide-react';
 
 function toCsv(rows) {
   const header = [
@@ -61,6 +62,7 @@ export default function EventsList() {
   useEffect(() => {
     const pid = searchParams.get('partner_id');
     if (pid) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- URL is external source of truth for deep links
       setFilters((f) => ({ ...f, partner_id: pid, page: 1 }));
     }
   }, [searchParams]);
@@ -122,6 +124,14 @@ export default function EventsList() {
     }
   }
 
+  const hasActiveFilters =
+    Boolean(filters.partner_id) ||
+    Boolean(filters.status) ||
+    Boolean(filters.event_type) ||
+    Boolean(filters.search) ||
+    Boolean(filters.from) ||
+    Boolean(filters.to);
+
   if (isLoading && !data) {
     return <Skeleton className="h-40 w-full" />;
   }
@@ -170,7 +180,27 @@ export default function EventsList() {
         />
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+      {events.length === 0 ? (
+        hasActiveFilters ? (
+          <EmptyState
+            title="No events match filters"
+            description="Try clearing filters or widening your search."
+            icon={Inbox}
+            action={
+              <Button type="button" onClick={clearFilters}>
+                Clear filters
+              </Button>
+            }
+          />
+        ) : (
+          <EmptyState
+            title="No events yet"
+            description="Send a test event from the Partners or Events page, or wait for ingestion."
+            icon={Inbox}
+          />
+        )
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-gray-100 bg-gray-50">
             <tr>
@@ -218,7 +248,9 @@ export default function EventsList() {
           </tbody>
         </table>
       </div>
+      )}
 
+      {events.length > 0 ? (
       <div className="flex items-center justify-between text-xs text-muted">
         <span>
           SHOWING {events.length} OF {total.toLocaleString()} EVENTS
@@ -242,6 +274,7 @@ export default function EventsList() {
           </button>
         </div>
       </div>
+      ) : null}
 
       <Modal
         open={testOpen}
