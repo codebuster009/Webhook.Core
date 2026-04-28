@@ -18,7 +18,7 @@ function mapEvent(e) {
     created_at: e.createdAt,
     delivered_at: e.deliveredAt,
     partner: e.partner
-      ? { id: e.partner.id, name: e.partner.name }
+      ? { id: e.partner.id, name: e.partner.name, webhookUrl: e.partner.webhookUrl }
       : undefined,
   };
 }
